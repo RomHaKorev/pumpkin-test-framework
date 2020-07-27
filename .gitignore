@@ -1,0 +1,6 @@
+**.DS_STORE
+*.pro.user*
+*.autosave
+coverage
+*.pri
+*.cpp
