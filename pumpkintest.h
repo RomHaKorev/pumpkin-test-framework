@@ -538,24 +538,24 @@ public:
 };
 }
 
-class AutoRegisteredTest: public PumpkinTest::details::TestSuite
+class AutoRegisteredTestGroup: public PumpkinTest::details::TestSuite
 {
 public:
-	AutoRegisteredTest(std::string const& name): PumpkinTest::details::TestSuite(name)
+	AutoRegisteredTestGroup(std::string const& name): PumpkinTest::details::TestSuite(name)
 	{}
 };
 
-class AutoRegisteredTests
+class AutoRegisteredTestCampaign
 {
 public:
-	AutoRegisteredTests()
+	AutoRegisteredTestCampaign()
 	{}
 
-	virtual ~AutoRegisteredTests() = 0;
+	virtual ~AutoRegisteredTestCampaign() = 0;
 private:
-	static std::vector<std::shared_ptr<AutoRegisteredTest>>& factories()
+	static std::vector<std::shared_ptr<AutoRegisteredTestGroup>>& factories()
 	{
-		static std::vector<std::shared_ptr<AutoRegisteredTest>> f = std::vector<std::shared_ptr<AutoRegisteredTest>>();
+		static std::vector<std::shared_ptr<AutoRegisteredTestGroup>> f = std::vector<std::shared_ptr<AutoRegisteredTestGroup>>();
 		return f;
 	}
 	template<typename T> friend class AutoRegistration;
@@ -567,16 +567,16 @@ template<typename T> class AutoRegistration: public details::AutoRegisteredTestF
 public:
 	AutoRegistration()
 	{
-		AutoRegisteredTests::factories().push_back(std::shared_ptr<T>(new T()));
+		AutoRegisteredTestCampaign::factories().push_back(std::shared_ptr<T>(new T()));
 	}
 };
 
 inline int runAll()
 {
 	PumpkinTest::details::Summary summary;
-	for (auto test : AutoRegisteredTests::factories())
+	for (auto test : AutoRegisteredTestCampaign::factories())
 		summary += test->run();
-	for (auto test : AutoRegisteredTests::factories())
+	for (auto test : AutoRegisteredTestCampaign::factories())
 		std::cout << *test;
 
 	std::cout << std::endl << summary << std::endl;
