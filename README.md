@@ -82,8 +82,8 @@ Pumpkin Test Framework will generate a text report once all the tests are played
 ```
 fizzbuzz() function Unit Tests | Should be equal                                                      | OK
                                | Should return 'buzz' if parameter is a multiple of 5                 | OK
-							   | Should return 'fizzbuzz' if parameter is a multiple of 3 and 5       | OK
-							   | Should return the raw value if parameter is not a multiple of 3 or 5 | OK
+                               | Should return 'fizzbuzz' if parameter is a multiple of 3 and 5       | OK
+                               | Should return the raw value if parameter is not a multiple of 3 or 5 | OK
 
 Summary: 4 tests passed
 ```
@@ -93,8 +93,8 @@ If a test is KO, the report will display the cause:
 ```
 fizzbuzz() function Unit Tests | Should be equal                                                      | OK
                                | Should return 'buzz' if parameter is a multiple of 5                 | OK
-							   | Should return 'fizzbuzz' if parameter is a multiple of 3 and 5       | OK
-							   | Should return the raw value if parameter is not a multiple of 3 or 5 | KO Cause: Expected value was '7' but actual value is '4'
+                               | Should return 'fizzbuzz' if parameter is a multiple of 3 and 5       | OK
+                               | Should return the raw value if parameter is not a multiple of 3 or 5 | KO Cause: Expected value was '7' but actual value is '4'
 
 Summary: 3 tests passed, 1 test failed
 ```
