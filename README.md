@@ -161,3 +161,32 @@ Pumpkin Test Framework can handle custom assertions:
 * If a `PumpkinTest::PumpkinTestException` (or any derived class) is raised during the execution, the test is KO
 * If another type of exception is raised during the execution, the test is FAILED
 * Otherwise, the test is OK
+
+You can create your own assertion based these rules:
+
+```
+class NotGreaterException: public PumpkinTestException {
+public:
+    NotGreaterException(int left, int right):
+	    PumpkinTestException(
+		(
+		    std::stringstream() << left << "should be greater than " << right).str()
+		)
+	{}
+};
+
+int void assertGreater(int left, int right)
+{
+    if (!(left > right))
+	    throw PumpkinTest::exceptions::NotGreaterException(left, right);
+}
+
+
+test("5 should be greater than 3", []()
+{
+    PumpkinTest::Assertions::assertGreater(5, 3);
+});
+
+The message passed to PumpkinTestException constructor will be displayed as the cause in the report.
+
+```
