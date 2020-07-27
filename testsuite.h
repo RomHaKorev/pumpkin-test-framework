@@ -588,14 +588,20 @@ public:
 
 	TestResult run()
 	{
+#ifdef PUMPKINTEST_ASSERTION_COUNTER
+		Assertions::counter(0);
+#endif
 		try {
-			Assertions::counter(0);
 			func();
 			result = TestResult::OK;
 		} catch(std::exception& ex) {
 			result = TestResult::KO;
 			std::stringstream ss;
+#ifdef PUMPKINTEST_ASSERTION_COUNTER
 			ss << "Assertion #" << Assertions::counter() << ": " << ex.what();
+#else
+			ss << ex.what();
+#endif
 			info = ss.str();
 		}
 		return result;
@@ -612,25 +618,44 @@ private:
 	std::string info;
 };
 
-class Summary: public std::map<TestResult, int>
+class Summary
 {
 public:
 	Summary()
 	{
-		insert(std::pair<TestResult, int>(TestResult::OK, 0));
-		insert(std::pair<TestResult, int>(TestResult::KO, 0));
-		insert(std::pair<TestResult, int>(TestResult::FAILED, 0));
-		insert(std::pair<TestResult, int>(TestResult::NOT_RUNNED, 0));
+		results.insert(std::pair<TestResult, int>(TestResult::OK, 0));
+		results.insert(std::pair<TestResult, int>(TestResult::KO, 0));
+		results.insert(std::pair<TestResult, int>(TestResult::FAILED, 0));
+		results.insert(std::pair<TestResult, int>(TestResult::NOT_RUNNED, 0));
 	}
 
 	Summary& operator+=(Summary const& other)
 	{
-		for (auto input: other)
+		for (auto input: other.results)
 		{
-			this->operator[](input.first) += input.second;
+			results[input.first] += input.second;
 		}
 		return *this;
 	}
+
+	inline int at(TestResult type) const
+	{
+		return results.at(type);
+	}
+
+	inline int& operator[](TestResult type)
+	{
+		return results[type];
+	}
+
+	int result() const
+	{
+		if (results.at(TestResult::KO) + results.at(TestResult::FAILED))
+			return -1;
+		return 0;
+	}
+private:
+	std::map<TestResult, int> results;
 };
 
 inline std::ostream& operator<<(std::ostream& os, Summary const& s)
@@ -677,6 +702,7 @@ public:
 		for (auto& test: tests)
 		{
 			summary[test->run()]++;
+
 		}
 		return summary;
 	}

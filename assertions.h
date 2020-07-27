@@ -527,6 +527,8 @@ Version 1.0 dated 2006-09-05.
 namespace PumpkinTest {
 namespace Assertions {
 
+#ifndef PUMPKINTEST_ASSERTION_COUNTER_INC
+#ifdef PUMPKINTEST_ASSERTION_COUNTER
 inline int& counter(int value = -1)
 {
 	static int c = 0;
@@ -534,31 +536,36 @@ inline int& counter(int value = -1)
 		c = value;
 	return c;
 }
+#define PUMPKINTEST_ASSERTION_COUNTER_INC ++counter();
+#else
+#define PUMPKINTEST_ASSERTION_COUNTER_INC
+#endif
+#endif
 
 template<typename T> void assertEquals(T expected, T result)
 {
-	++counter();
-	if (expected != result)
+PUMPKINTEST_ASSERTION_COUNTER_INC
+	if (!(expected == result))
 		throw PumpkinTest::exceptions::NotEqualsException<T>(expected, result);
 }
 
 inline void assertTrue(bool result)
 {
-	++counter();
+	PUMPKINTEST_ASSERTION_COUNTER_INC
 	if (!result)
 		throw PumpkinTest::exceptions::BooleanException(true);
 }
 
 inline void assertFalse(bool result)
 {
-	++counter();
+	PUMPKINTEST_ASSERTION_COUNTER_INC
 	if (result)
 		throw PumpkinTest::exceptions::BooleanException(false);
 }
 
 template<class T, typename U> void assertContains(T const& collection, U const& value)
 {
-	++counter();
+	PUMPKINTEST_ASSERTION_COUNTER_INC
 	for (auto const& item: collection)
 	{
 		if (item == value)

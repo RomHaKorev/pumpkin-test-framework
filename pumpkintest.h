@@ -580,7 +580,7 @@ inline int runAll()
 		std::cout << *test;
 
 	std::cout << std::endl << summary << std::endl;
-	return 0;
+	return summary.result();
 }
 
 }
