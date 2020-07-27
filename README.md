@@ -51,7 +51,7 @@ public:
 };
 ```
 
-Then, we have to register our `FizzbuzzTest` as a test class by using `REGISTER_TEST`
+Then, we have to register our `FizzbuzzTest` as a test class by using `REGISTER_PUMPKIN_TEST`
 
 
 ```
@@ -60,10 +60,10 @@ class FizzbuzzTest: public PumpkinTest::AutoRegisteredTestGroup
 ...
 };
 
-REGISTER_TEST(FizzbuzzTest)
+REGISTER_PUMPKIN_TEST(FizzbuzzTest)
 ```
 
-The `REGISTER_TEST` will just generate an instance of `FizzbuzzTest` in order to register it in the list of test groups runned by Pumpkin Test Framework.
+The `REGISTER_PUMPKIN_TEST` will just generate an instance of `FizzbuzzTest` in order to register it in the list of test groups runned by Pumpkin Test Framework.
 
 
 Last step: run the tests in your main():
@@ -144,7 +144,7 @@ public:
 		});
 };
 
-REGISTER_TEST(ValueTest)
+REGISTER_PUMPKIN_TEST(ValueTest)
 ```
 
 main.cpp

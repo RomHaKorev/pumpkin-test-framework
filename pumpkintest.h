@@ -586,6 +586,6 @@ inline int runAll()
 }
 
 
-#define REGISTER_TEST(T) static const PumpkinTest::AutoRegistration<T> T ## Inst = PumpkinTest::AutoRegistration<T>();
+#define REGISTER_PUMPKIN_TEST(T) static const PumpkinTest::AutoRegistration<T> T ## Inst = PumpkinTest::AutoRegistration<T>();
 
 #endif // AUTOREGISTER_H
