@@ -519,37 +519,115 @@ Version 1.0 dated 2006-09-05.
 
 
 
-#ifndef PUMPKIN_TEST_H
-#define PUMPKIN_TEST_H
+#ifndef PUMPKIN_TEST_TESTSUITE_H
+#define PUMPKIN_TEST_TESTSUITE_H
 
-#include <vector>
+#include <string>
+#include <list>
+#include <functional>
+#include <sstream>
 #include <iostream>
+#include <math.h>
+#include <map>
 
-#include "private/assertions.h"
+#include "./assertions.h"
 
-#include "private/testsuite.h"
-#include "private/autoregistration.h"
-
+#include "./test.h"
+#include "./summary.h"
 
 namespace PumpkinTest {
-
-using AutoRegisteredTestGroup = PumpkinTest::details::TestSuite;
-
-inline int runAll()
+namespace details {
+inline std::ostream& operator<<(std::ostream& os, Summary const& s)
 {
-	PumpkinTest::details::Summary summary;
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		summary += test->run();
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		std::cout << *test;
+	bool first = true;
+	auto dump = [&](TestResult r, std::string const& suffix)
+	{
+		if (s.at(r) == 0)
+			return;
+		if (first == false)
+			os << ", ";
+		first = false;
 
-	std::cout << std::endl << summary << std::endl;
-	return summary.result();
+		if (s.at(r) == 1)
+			os << s.at(r) << " test " << suffix;
+		else if (s.at(r) > 1)
+			os << s.at(r) << " tests " << suffix;
+	};
+
+	os << "Summary: ";
+	dump(TestResult::OK, "passed");
+	dump(TestResult::KO, "failed");
+	dump(TestResult::FAILED, "failed with error");
+	os << std::endl;
+	return os;
 }
 
+class TestSuite {
+public:
+	TestSuite(std::string const& name): name(name)
+	{
+		maxSuiteTitleLength(name.size());
+	}
+
+	void test(std::string const& name, std::function<void()> func)
+	{
+		maxTitleLength(name.size());
+		tests.push_back(std::unique_ptr<Test>(new Test(name, func)));
+	}
+
+	Summary run()
+	{
+		Summary summary;
+		for (auto& test: tests)
+		{
+			summary[test->run()]++;
+
+		}
+		return summary;
+	}
+
+	static size_t& maxTitleLength(size_t newValue=0)
+	{
+		static size_t s = 0;
+		s = std::max(newValue, s);
+		return s;
+	}
+
+	static size_t& maxSuiteTitleLength(size_t newValue=0)
+	{
+		static size_t s = 0;
+		s = std::max(newValue, s);
+		return s;
+	}
+
+private:
+	std::string name;
+	std::list<std::unique_ptr<Test>> tests;
+
+	friend std::ostream& operator<<(std::ostream& os, TestSuite const& suite)
+	{
+		os << suite.name << std::string(maxSuiteTitleLength() - suite.name.size(), ' ');
+		bool first = true;
+		for (auto const& test: suite.tests)
+		{
+			if (!first)
+				os << std::string(maxSuiteTitleLength(), ' ');
+			os << " | ";
+			os.width(long(maxTitleLength()));
+			os << std::left << test->testname() << " | ";
+			os << test->state();
+			if (!test->message().empty())
+				os << " Cause: " << test->message();
+			os << std::endl;
+			first = false;
+		}
+		return os;
+	}
+};
+
+
+
+}
 }
 
-
-#define REGISTER_PUMPKIN_TEST(T) static const PumpkinTest::details::AutoRegistration<T> T ## Inst = PumpkinTest::details::AutoRegistration<T>();
-
-#endif // PUMPKIN_TEST_H
+#endif // PUMPKIN_TEST_TESTSUITE_H

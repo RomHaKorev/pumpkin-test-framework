@@ -519,37 +519,61 @@ Version 1.0 dated 2006-09-05.
 
 
 
-#ifndef PUMPKIN_TEST_H
-#define PUMPKIN_TEST_H
+#ifndef PUMPKIN_TEST_EXCEPTIONS_H
+#define PUMPKIN_TEST_EXCEPTIONS_H
 
-#include <vector>
-#include <iostream>
-
-#include "private/assertions.h"
-
-#include "private/testsuite.h"
-#include "private/autoregistration.h"
+#include <sstream>
+#include <exception>
 
 
 namespace PumpkinTest {
+namespace exceptions {
 
-using AutoRegisteredTestGroup = PumpkinTest::details::TestSuite;
-
-inline int runAll()
+class PumpkinTestException: public std::exception
 {
-	PumpkinTest::details::Summary summary;
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		summary += test->run();
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		std::cout << *test;
+public:
+	PumpkinTestException(std::string const& message): message(message)
+	{}
 
-	std::cout << std::endl << summary << std::endl;
-	return summary.result();
+	virtual ~PumpkinTestException()
+	{}
+
+	virtual const char * what () const noexcept { return message.c_str(); }
+
+private:
+	std::string const message;
+};
+
+template<typename T> class NotEqualsException: public PumpkinTestException {
+public:
+	NotEqualsException(T expected, T result):
+		PumpkinTestException(
+		(std::stringstream() << std::boolalpha << "Expected value was '" << expected << "' but actual value is '" << result << "'").str()
+		)
+	{}
+};
+
+class BooleanException: public PumpkinTestException {
+public:
+	BooleanException(bool value):
+		PumpkinTestException(
+		(std::stringstream() << std::boolalpha << "The condition is expected to be " << value).str()
+		)
+	{}
+};
+
+
+template<class T, typename U> class MissingItemInCollectionException: public PumpkinTestException {
+public:
+	MissingItemInCollectionException(T const& collection, U const& value):
+		PumpkinTestException(
+			(std::stringstream() << std::boolalpha << "Expecting  " << collection << " to contain " << value).str()
+		)
+	{}
+};
+
 }
 
 }
 
-
-#define REGISTER_PUMPKIN_TEST(T) static const PumpkinTest::details::AutoRegistration<T> T ## Inst = PumpkinTest::details::AutoRegistration<T>();
-
-#endif // PUMPKIN_TEST_H
+#endif // PUMPKIN_TEST_EXCEPTIONS_H

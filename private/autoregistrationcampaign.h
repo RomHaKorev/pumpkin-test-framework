@@ -516,223 +516,44 @@ jurisdiction, by the more diligent Party.
 
 Version 1.0 dated 2006-09-05.
 */
+#ifndef PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H
+#define PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H
 
 
+#include "./autoregistrable.h"
+#include "./testsuite.h"
 
-#ifndef TESTSUITE_H
-#define TESTSUITE_H
+#include <vector>
 
-#include <string>
-#include <list>
-#include <functional>
-#include <sstream>
-#include <iostream>
-#include <math.h>
-#include <map>
-
-#include "assertions.h"
 
 namespace PumpkinTest {
+int runAll();
 namespace details {
-
-enum TestResult
-{
-	NOT_RUNNED,
-	OK,
-	KO,
-	FAILED
-};
-
-inline std::ostream& operator<<(std::ostream& os, TestResult const& result)
-{
-	switch(result)
-	{
-	case NOT_RUNNED:
-		os << "\033[0;33mNot runned\033[0m";
-		break;
-	case OK:
-		//os << "OK";
-		os << "\033[0;32mOK\033[0m";
-		break;
-	case KO:
-		os << "\033[0;31mKO\033[0m";
-		//os << "KO";
-		break;
-	case FAILED:
-		os << "\033[1;31mFailed\033[0m";
-	}
-	return os;
-}
-
-class Test
+class AutoRegisteredTestCampaign
 {
 public:
-	Test(std::string const& name, std::function<void()> func): name(name), info(""), func(func), result(TestResult::NOT_RUNNED)
+	AutoRegisteredTestCampaign()
 	{}
 
-	TestResult run()
+	virtual ~AutoRegisteredTestCampaign() = 0;
+	static void push(std::shared_ptr<PumpkinTest::details::TestSuite> const& suite)
 	{
-#ifdef PUMPKINTEST_ASSERTION_COUNTER
-		Assertions::counter(0);
-#endif
-		try {
-			func();
-			result = TestResult::OK;
-		} catch(std::exception& ex) {
-			result = TestResult::KO;
-			std::stringstream ss;
-#ifdef PUMPKINTEST_ASSERTION_COUNTER
-			ss << "Assertion #" << Assertions::counter() << ": " << ex.what();
-#else
-			ss << ex.what();
-#endif
-			info = ss.str();
-		}
-		return result;
-	}
-
-	std::string const& testname() const { return name; }
-	TestResult state() const { return result; }
-	std::string const& message() const { return info; }
-
-private:
-	std::string name;
-	std::string info;
-	std::function<void()> func;
-	TestResult result;
-};
-
-class Summary
-{
-public:
-	Summary()
-	{
-		results.insert(std::pair<TestResult, int>(TestResult::OK, 0));
-		results.insert(std::pair<TestResult, int>(TestResult::KO, 0));
-		results.insert(std::pair<TestResult, int>(TestResult::FAILED, 0));
-		results.insert(std::pair<TestResult, int>(TestResult::NOT_RUNNED, 0));
-	}
-
-	Summary& operator+=(Summary const& other)
-	{
-		for (auto input: other.results)
-		{
-			results[input.first] += input.second;
-		}
-		return *this;
-	}
-
-	inline int at(TestResult type) const
-	{
-		return results.at(type);
-	}
-
-	inline int& operator[](TestResult type)
-	{
-		return results[type];
-	}
-
-	int result() const
-	{
-		if (results.at(TestResult::KO) + results.at(TestResult::FAILED))
-			return -1;
-		return 0;
+		factories().push_back(suite);
 	}
 private:
-	std::map<TestResult, int> results;
+	static std::vector<std::shared_ptr<PumpkinTest::details::TestSuite>>& factories()
+	{
+		static std::vector<std::shared_ptr<TestSuite>> f = std::vector<std::shared_ptr<TestSuite>>();
+		return f;
+	}
+
+
+	friend int PumpkinTest::runAll();
 };
-
-inline std::ostream& operator<<(std::ostream& os, Summary const& s)
-{
-	bool first = true;
-	auto dump = [&](TestResult r, std::string const& suffix)
-	{
-		if (s.at(r) == 0)
-			return;
-		if (first == false)
-			os << ", ";
-		first = false;
-
-		if (s.at(r) == 1)
-			os << s.at(r) << " test " << suffix;
-		else if (s.at(r) > 1)
-			os << s.at(r) << " tests " << suffix;
-	};
-
-	os << "Summary: ";
-	dump(TestResult::OK, "passed");
-	dump(TestResult::KO, "failed");
-	dump(TestResult::FAILED, "failed with error");
-	os << std::endl;
-	return os;
-}
-
-class TestSuite {
-public:
-	TestSuite(std::string const& name): name(name)
-	{
-		maxSuiteTitleLength(name.size());
-	}
-
-	void test(std::string const& name, std::function<void()> func)
-	{
-		maxTitleLength(name.size());
-		tests.push_back(std::unique_ptr<Test>(new Test(name, func)));
-	}
-
-	Summary run()
-	{
-		Summary summary;
-		for (auto& test: tests)
-		{
-			summary[test->run()]++;
-
-		}
-		return summary;
-	}
-
-	static size_t& maxTitleLength(size_t newValue=0)
-	{
-		static size_t s = 0;
-		s = std::max(newValue, s);
-		return s;
-	}
-
-	static size_t& maxSuiteTitleLength(size_t newValue=0)
-	{
-		static size_t s = 0;
-		s = std::max(newValue, s);
-		return s;
-	}
-
-private:
-	std::string name;
-	std::list<std::unique_ptr<Test>> tests;
-
-	friend std::ostream& operator<<(std::ostream& os, TestSuite const& suite)
-	{
-		os << suite.name << std::string(maxSuiteTitleLength() - suite.name.size(), ' ');
-		bool first = true;
-		for (auto const& test: suite.tests)
-		{
-			if (!first)
-				os << std::string(maxSuiteTitleLength(), ' ');
-			os << " | ";
-			os.width(long(maxTitleLength()));
-			os << std::left << test->testname() << " | ";
-			os << test->state();
-			if (!test->message().empty())
-				os << " Cause: " << test->message();
-			os << std::endl;
-			first = false;
-		}
-		return os;
-	}
-};
-
-
 
 }
 }
 
-#endif // TESTSUITE_H
+
+
+#endif // PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H

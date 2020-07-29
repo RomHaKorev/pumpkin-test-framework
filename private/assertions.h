@@ -519,61 +519,62 @@ Version 1.0 dated 2006-09-05.
 
 
 
-#ifndef EXCEPTIONS_H
-#define EXCEPTIONS_H
+#ifndef PUMPKIN_TEST_ASSERTIONS_H
+#define PUMPKIN_TEST_ASSERTIONS_H
 
-#include <sstream>
-#include <exception>
-
+#include "exceptions.h"
 
 namespace PumpkinTest {
-namespace exceptions {
+namespace Assertions {
 
-class PumpkinTestException: public std::exception
+#ifndef PUMPKINTEST_ASSERTION_COUNTER_INC
+#ifdef PUMPKINTEST_ASSERTION_COUNTER
+inline int& counter(int value = -1)
 {
-public:
-	PumpkinTestException(std::string const& message): message(message)
-	{}
+	static int c = 0;
+	if (value != -1)
+		c = value;
+	return c;
+}
+#define PUMPKINTEST_ASSERTION_COUNTER_INC ++counter();
+#else
+#define PUMPKINTEST_ASSERTION_COUNTER_INC
+#endif
+#endif
 
-	virtual ~PumpkinTestException()
-	{}
+template<typename T> void assertEquals(T expected, T result)
+{
+PUMPKINTEST_ASSERTION_COUNTER_INC
+	if (!(expected == result))
+		throw PumpkinTest::exceptions::NotEqualsException<T>(expected, result);
+}
 
-	virtual const char * what () const noexcept { return message.c_str(); }
+inline void assertTrue(bool result)
+{
+	PUMPKINTEST_ASSERTION_COUNTER_INC
+	if (!result)
+		throw PumpkinTest::exceptions::BooleanException(true);
+}
 
-private:
-	std::string const message;
-};
+inline void assertFalse(bool result)
+{
+	PUMPKINTEST_ASSERTION_COUNTER_INC
+	if (result)
+		throw PumpkinTest::exceptions::BooleanException(false);
+}
 
-template<typename T> class NotEqualsException: public PumpkinTestException {
-public:
-	NotEqualsException(T expected, T result):
-		PumpkinTestException(
-		(std::stringstream() << std::boolalpha << "Expected value was '" << expected << "' but actual value is '" << result << "'").str()
-		)
-	{}
-};
-
-class BooleanException: public PumpkinTestException {
-public:
-	BooleanException(bool value):
-		PumpkinTestException(
-		(std::stringstream() << std::boolalpha << "The condition is expected to be " << value).str()
-		)
-	{}
-};
-
-
-template<class T, typename U> class MissingItemInCollectionException: public PumpkinTestException {
-public:
-	MissingItemInCollectionException(T const& collection, U const& value):
-		PumpkinTestException(
-			(std::stringstream() << std::boolalpha << "Expecting  " << collection << " to contain " << value).str()
-		)
-	{}
-};
-
+template<class T, typename U> void assertContains(T const& collection, U const& value)
+{
+	PUMPKINTEST_ASSERTION_COUNTER_INC
+	for (auto const& item: collection)
+	{
+		if (item == value)
+			return;
+	}
+	throw PumpkinTest::exceptions::MissingItemInCollectionException<T, U>(collection, value);
 }
 
 }
+}
 
-#endif // EXCEPTIONS_H
+#endif // PUMPKIN_TEST_ASSERTIONS_H

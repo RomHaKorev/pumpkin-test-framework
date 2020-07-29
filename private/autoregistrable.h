@@ -516,65 +516,20 @@ jurisdiction, by the more diligent Party.
 
 Version 1.0 dated 2006-09-05.
 */
-
-
-
-#ifndef ASSERTIONS_H
-#define ASSERTIONS_H
-
-#include "exceptions.h"
+#ifndef PUMPKIN_TEST_AUTOREGISTRABLE_H
+#define PUMPKIN_TEST_AUTOREGISTRABLE_H
 
 namespace PumpkinTest {
-namespace Assertions {
-
-#ifndef PUMPKINTEST_ASSERTION_COUNTER_INC
-#ifdef PUMPKINTEST_ASSERTION_COUNTER
-inline int& counter(int value = -1)
+namespace details {
+class AutoRegistrable
 {
-	static int c = 0;
-	if (value != -1)
-		c = value;
-	return c;
-}
-#define PUMPKINTEST_ASSERTION_COUNTER_INC ++counter();
-#else
-#define PUMPKINTEST_ASSERTION_COUNTER_INC
-#endif
-#endif
-
-template<typename T> void assertEquals(T expected, T result)
-{
-PUMPKINTEST_ASSERTION_COUNTER_INC
-	if (!(expected == result))
-		throw PumpkinTest::exceptions::NotEqualsException<T>(expected, result);
-}
-
-inline void assertTrue(bool result)
-{
-	PUMPKINTEST_ASSERTION_COUNTER_INC
-	if (!result)
-		throw PumpkinTest::exceptions::BooleanException(true);
-}
-
-inline void assertFalse(bool result)
-{
-	PUMPKINTEST_ASSERTION_COUNTER_INC
-	if (result)
-		throw PumpkinTest::exceptions::BooleanException(false);
-}
-
-template<class T, typename U> void assertContains(T const& collection, U const& value)
-{
-	PUMPKINTEST_ASSERTION_COUNTER_INC
-	for (auto const& item: collection)
-	{
-		if (item == value)
-			return;
-	}
-	throw PumpkinTest::exceptions::MissingItemInCollectionException<T, U>(collection, value);
-}
+public:
+	AutoRegistrable(){}
+};
 
 }
 }
 
-#endif // ASSERTIONS_H
+
+
+#endif // PUMPKIN_TEST_AUTOREGISTRABLE_H

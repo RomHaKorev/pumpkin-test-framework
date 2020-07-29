@@ -519,37 +519,68 @@ Version 1.0 dated 2006-09-05.
 
 
 
-#ifndef PUMPKIN_TEST_H
-#define PUMPKIN_TEST_H
+#ifndef PUMPKIN_TEST_TEST_H
+#define PUMPKIN_TEST_TEST_H
 
-#include <vector>
+#include <string>
+#include <list>
+#include <functional>
+#include <sstream>
 #include <iostream>
+#include <math.h>
+#include <map>
 
-#include "private/assertions.h"
-
-#include "private/testsuite.h"
-#include "private/autoregistration.h"
-
+#include "assertions.h"
 
 namespace PumpkinTest {
+namespace details {
 
-using AutoRegisteredTestGroup = PumpkinTest::details::TestSuite;
-
-inline int runAll()
+enum TestResult
 {
-	PumpkinTest::details::Summary summary;
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		summary += test->run();
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		std::cout << *test;
+	NOT_RUNNED,
+	OK,
+	KO,
+	FAILED
+};
 
-	std::cout << std::endl << summary << std::endl;
-	return summary.result();
+class Test
+{
+public:
+	Test(std::string const& name, std::function<void()> func): name(name), info(""), func(func), result(TestResult::NOT_RUNNED)
+	{}
+
+	TestResult run()
+	{
+#ifdef PUMPKINTEST_ASSERTION_COUNTER
+		Assertions::counter(0);
+#endif
+		try {
+			func();
+			result = TestResult::OK;
+		} catch(std::exception& ex) {
+			result = TestResult::KO;
+			std::stringstream ss;
+#ifdef PUMPKINTEST_ASSERTION_COUNTER
+			ss << "Assertion #" << Assertions::counter() << ": " << ex.what();
+#else
+			ss << ex.what();
+#endif
+			info = ss.str();
+		}
+		return result;
+	}
+
+	std::string const& testname() const { return name; }
+	TestResult state() const { return result; }
+	std::string const& message() const { return info; }
+
+private:
+	std::string name;
+	std::string info;
+	std::function<void()> func;
+	TestResult result;
+};
+}
 }
 
-}
-
-
-#define REGISTER_PUMPKIN_TEST(T) static const PumpkinTest::details::AutoRegistration<T> T ## Inst = PumpkinTest::details::AutoRegistration<T>();
-
-#endif // PUMPKIN_TEST_H
+#endif // PUMPKIN_TEST_TEST_H

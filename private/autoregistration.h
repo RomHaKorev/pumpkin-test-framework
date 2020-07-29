@@ -516,40 +516,32 @@ jurisdiction, by the more diligent Party.
 
 Version 1.0 dated 2006-09-05.
 */
+#ifndef PUMPKIN_TEST_AUTOREGISTRATION_H
+#define PUMPKIN_TEST_AUTOREGISTRATION_H
 
 
-
-#ifndef PUMPKIN_TEST_H
-#define PUMPKIN_TEST_H
+#include "./autoregistrable.h"
+#include "./autoregistrationcampaign.h"
 
 #include <vector>
-#include <iostream>
-
-#include "private/assertions.h"
-
-#include "private/testsuite.h"
-#include "private/autoregistration.h"
 
 
 namespace PumpkinTest {
+int runAll();
+namespace details {
 
-using AutoRegisteredTestGroup = PumpkinTest::details::TestSuite;
-
-inline int runAll()
+template<typename T> class AutoRegistration: public details::AutoRegistrable
 {
-	PumpkinTest::details::Summary summary;
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		summary += test->run();
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		std::cout << *test;
-
-	std::cout << std::endl << summary << std::endl;
-	return summary.result();
-}
+public:
+	AutoRegistration()
+	{
+		AutoRegisteredTestCampaign::push(std::shared_ptr<T>(new T()));
+	}
+};
 
 }
+}
 
 
-#define REGISTER_PUMPKIN_TEST(T) static const PumpkinTest::details::AutoRegistration<T> T ## Inst = PumpkinTest::details::AutoRegistration<T>();
 
-#endif // PUMPKIN_TEST_H
+#endif // PUMPKIN_TEST_AUTOREGISTRATION_H
