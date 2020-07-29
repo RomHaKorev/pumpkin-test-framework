@@ -580,7 +580,9 @@ public:
 		Summary summary;
 		for (auto& test: tests)
 		{
+			setup();
 			summary[test->run()]++;
+			teardown();
 
 		}
 		return summary;
@@ -599,6 +601,12 @@ public:
 		s = std::max(newValue, s);
 		return s;
 	}
+
+	virtual void setup()
+	{}
+
+	virtual void teardown()
+	{}
 
 private:
 	std::string name;
