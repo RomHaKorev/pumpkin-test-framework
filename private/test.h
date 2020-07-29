@@ -557,15 +557,23 @@ public:
 		try {
 			func();
 			result = TestResult::OK;
-		} catch(std::exception& ex) {
+		}
+		catch(PumpkinTest::exceptions::PumpkinTestException const& ex)
+		{
 			result = TestResult::KO;
-			std::stringstream ss;
-#ifdef PUMPKINTEST_ASSERTION_COUNTER
-			ss << "Assertion #" << Assertions::counter() << ": " << ex.what();
-#else
-			ss << ex.what();
-#endif
-			info = ss.str();
+			trace(ex.what());
+		}
+		catch(std::exception const& ex)
+		{
+			result = TestResult::FAILED;
+			trace(ex.what());
+		}
+		catch(...)
+		{
+			std::exception_ptr p = std::current_exception();
+			result = TestResult::FAILED;
+			trace("Unknown failure occurred. Possible memory corruption");
+
 		}
 		return result;
 	}
@@ -579,6 +587,17 @@ private:
 	std::string info;
 	std::function<void()> func;
 	TestResult result;
+
+	void trace(std::string const& message)
+	{
+		std::stringstream ss;
+#ifdef PUMPKINTEST_ASSERTION_COUNTER
+		ss << "Assertion #" << Assertions::counter() << ": " << message;
+#else
+		ss << ex.what();
+#endif
+		info = ss.str();
+	}
 };
 }
 }
