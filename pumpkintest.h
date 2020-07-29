@@ -538,12 +538,14 @@ public:
 };
 }
 
-class AutoRegisteredTestGroup: public PumpkinTest::details::TestSuite
+/*class AutoRegisteredTestGroup: public PumpkinTest::details::TestSuite
 {
 public:
 	AutoRegisteredTestGroup(std::string const& name): PumpkinTest::details::TestSuite(name)
 	{}
-};
+};*/
+
+using AutoRegisteredTestGroup = PumpkinTest::details::TestSuite;
 
 class AutoRegisteredTestCampaign
 {

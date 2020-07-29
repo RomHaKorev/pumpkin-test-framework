@@ -535,22 +535,6 @@ Version 1.0 dated 2006-09-05.
 namespace PumpkinTest {
 namespace details {
 
-class TestSuite;
-
-/*class TestResult {
-public:
-	TestResult(std::string const & name, bool result, std::string const& info= ""): name(name),
-		state(result), info(info)
-	{}
-private:
-	std::string name;
-	bool state;
-	std::string info;
-
-	friend std::ostream& operator<<(std::ostream& os, TestSuite const& suite);
-};*/
-
-
 enum TestResult
 {
 	NOT_RUNNED,
@@ -583,7 +567,7 @@ inline std::ostream& operator<<(std::ostream& os, TestResult const& result)
 class Test
 {
 public:
-	Test(std::string const& name, std::function<void()> func): name(name), func(func), result(TestResult::NOT_RUNNED)
+	Test(std::string const& name, std::function<void()> func): name(name), info(""), func(func), result(TestResult::NOT_RUNNED)
 	{}
 
 	TestResult run()
@@ -613,9 +597,9 @@ public:
 
 private:
 	std::string name;
+	std::string info;
 	std::function<void()> func;
 	TestResult result;
-	std::string info;
 };
 
 class Summary
