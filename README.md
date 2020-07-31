@@ -14,14 +14,14 @@ It's a (very) small header file only library written in C++ 11 and the standard 
 
 Let's say we want to test the following function:
 
-```
+```c++
 std::string fizzbuzz(int value)
 {}
 ```
 
 First, we have to write our unit tests as followed in a source file (such as `tst_fizzbuzztest.cpp`):
 
-```
+```c++
 class FizzbuzzTest: public PumpkinTest::AutoRegisteredTestFeature
 {
 public:
@@ -53,7 +53,7 @@ public:
 Then, we have to register our `FizzbuzzTest` as a test class by using `REGISTER_PUMPKIN_TEST`
 
 
-```
+```c++
 class FizzbuzzTest: public PumpkinTest::AutoRegisteredTestFeature
 {
 ...
@@ -67,7 +67,7 @@ The `REGISTER_PUMPKIN_TEST` will just generate an instance of `FizzbuzzTest` in 
 
 Last step: run the tests in your main():
 
-```
+```c++
 int main(int argc, char *argv[])
 {
     return PumpkinTest::runAll();
@@ -110,7 +110,7 @@ The basic assertions can be used with custom type as long as they define:
 For example:
 
 value.h
-```
+```c++
 class Value
 {
 public:
@@ -125,7 +125,7 @@ public:
 ```
 
 tst_value.cpp
-```
+```c++
 inline std::ostream& operator<<(std::ostream& os, Value const& s)
 {
     os << "Value(" << s.value <<")";
@@ -147,7 +147,7 @@ REGISTER_PUMPKIN_TEST(ValueTest)
 ```
 
 main.cpp
-```
+```c++
 int main(int argc, char *argv[])
 {
     return PumpkinTest::runAll();
@@ -163,7 +163,7 @@ Pumpkin Test Framework can handle custom assertions:
 
 You can create your own assertion based these rules:
 
-```
+```c++
 class NotGreaterException: public PumpkinTestException {
 public:
     NotGreaterException(int left, int right):
