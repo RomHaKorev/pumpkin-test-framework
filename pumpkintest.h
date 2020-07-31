@@ -533,7 +533,7 @@ Version 1.0 dated 2006-09-05.
 
 namespace PumpkinTest {
 
-using AutoRegisteredTestGroup = PumpkinTest::details::TestSuite;
+using AutoRegisteredTestFeature = PumpkinTest::details::TestSuite;
 
 inline int runAll()
 {

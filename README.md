@@ -7,26 +7,25 @@ It's a (very) small header file only library written in C++ 11 and the standard 
 ## How to use it
 
 
-* A test category is represented by a class inheriting from `PumpkinTest::AutoRegisteredTestGroup`.
-* A Single test is represented by a name and a lambda passed to the method `PumpkinTest::AutoRegisteredTestGroup::test`
+* A test category is represented by a class inheriting from `PumpkinTest::AutoRegisteredTestFeature`.
+* A Single test is represented by a name and a lambda passed to the method `PumpkinTest::AutoRegisteredTestFeature::test(std::string, std::function<void()>)`
 * A test is considered as OK if no `PumpkinTest::PumpkinTestException` is raised during the execution
 * Pumpkin Test Framework provides several assertions to check the results
 
 Let's say we want to test the following function:
 
 ```
-void fizzbuzz(int value)
-{
-}
+std::string fizzbuzz(int value)
+{}
 ```
 
 First, we have to write our unit tests as followed in a source file (such as `tst_fizzbuzztest.cpp`):
 
 ```
-class FizzbuzzTest: public PumpkinTest::AutoRegisteredTestGroup
+class FizzbuzzTest: public PumpkinTest::AutoRegisteredTestFeature
 {
 public:
-    FizzbuzzTest(): PumpkinTest::AutoRegisteredTestGroup("fizzbuzz() function Unit Tests")
+    FizzbuzzTest(): PumpkinTest::AutoRegisteredTestFeature("fizzbuzz() function Unit Tests")
 	{
 	    test("Should return 'fizz' if parameter is a multiple of 3", []()
 		{
@@ -55,7 +54,7 @@ Then, we have to register our `FizzbuzzTest` as a test class by using `REGISTER_
 
 
 ```
-class FizzbuzzTest: public PumpkinTest::AutoRegisteredTestGroup
+class FizzbuzzTest: public PumpkinTest::AutoRegisteredTestFeature
 {
 ...
 };
@@ -63,7 +62,7 @@ class FizzbuzzTest: public PumpkinTest::AutoRegisteredTestGroup
 REGISTER_PUMPKIN_TEST(FizzbuzzTest)
 ```
 
-The `REGISTER_PUMPKIN_TEST` will just generate an instance of `FizzbuzzTest` in order to register it in the list of test groups runned by Pumpkin Test Framework.
+The `REGISTER_PUMPKIN_TEST` will just generate an instance of `FizzbuzzTest` in order to register it in the list of test features runned by Pumpkin Test Framework.
 
 
 Last step: run the tests in your main():
@@ -82,8 +81,8 @@ Pumpkin Test Framework will generate a text report once all the tests are played
 ```
 fizzbuzz() function Unit Tests | Should be equal                                                      | OK
                                | Should return 'buzz' if parameter is a multiple of 5                 | OK
-                               | Should return 'fizzbuzz' if parameter is a multiple of 3 and 5       | OK
-                               | Should return the raw value if parameter is not a multiple of 3 or 5 | OK
+							   | Should return 'fizzbuzz' if parameter is a multiple of 3 and 5       | OK
+							   | Should return the raw value if parameter is not a multiple of 3 or 5 | OK
 
 Summary: 4 tests passed
 ```
@@ -93,8 +92,8 @@ If a test is KO, the report will display the cause:
 ```
 fizzbuzz() function Unit Tests | Should be equal                                                      | OK
                                | Should return 'buzz' if parameter is a multiple of 5                 | OK
-                               | Should return 'fizzbuzz' if parameter is a multiple of 3 and 5       | OK
-                               | Should return the raw value if parameter is not a multiple of 3 or 5 | KO Cause: Expected value was '7' but actual value is '4'
+							   | Should return 'fizzbuzz' if parameter is a multiple of 3 and 5       | OK
+							   | Should return the raw value if parameter is not a multiple of 3 or 5 | KO Cause: Expected value was '7' but actual value is '4'
 
 Summary: 3 tests passed, 1 test failed
 ```
@@ -133,10 +132,10 @@ inline std::ostream& operator<<(std::ostream& os, Value const& s)
 	return os;
 }
 
-class ValueTest: public PumpkinTest::AutoRegisteredTestGroup
+class ValueTest: public PumpkinTest::AutoRegisteredTestFeature
 {
 public:
-    FizzbuzzTest(): PumpkinTest::AutoRegisteredTestGroup("Value class Unit Tests")
+    FizzbuzzTest(): PumpkinTest::AutoRegisteredTestFeature("Value class Unit Tests")
 	{
 	    test("Should be equal", []()
 		{
