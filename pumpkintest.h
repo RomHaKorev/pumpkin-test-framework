@@ -529,6 +529,7 @@ Version 1.0 dated 2006-09-05.
 
 #include "private/testsuite.h"
 #include "private/autoregistration.h"
+#include "private/summary.h"
 
 
 namespace PumpkinTest {
@@ -538,18 +539,35 @@ using AutoRegisteredTestFeature = PumpkinTest::details::TestSuite;
 inline int runAll()
 {
 	PumpkinTest::details::Summary summary;
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		summary += test->run();
-	for (auto test : PumpkinTest::details::AutoRegisteredTestCampaign::factories())
-		std::cout << *test;
 
-	std::cout << std::endl << summary << std::endl;
+	std::stringstream output;
+
+	for (auto section : PumpkinTest::details::AutoRegisteredTestCampaign::sections())
+	{
+		output << section.name << std::endl;
+		for (auto test: section)
+		{
+			summary += test->run();
+			output << *test;
+		}
+	}
+
+	std::cout << std::endl << output.str() << std::endl << summary << std::endl;
 	return summary.result();
 }
 
 }
 
+#define REGISTER_PUMPKIN_TEST_GLOBAL(T) static const PumpkinTest::details::AutoRegistration<T> T ## Inst = PumpkinTest::details::AutoRegistration<T>();
+#define REGISTER_PUMPKIN_TEST_SECTION(T, section) static const PumpkinTest::details::AutoRegistration<T> T ## Inst = PumpkinTest::details::AutoRegistration<T>(section);
 
-#define REGISTER_PUMPKIN_TEST(T) static const PumpkinTest::details::AutoRegistration<T> T ## Inst = PumpkinTest::details::AutoRegistration<T>();
+#define SELECT_ACCORDING_ARG_COUNT(arg1, arg2, arg3, ...) arg3
+#define REGISTER_PUMPKIN_TEST_DISPATCHER(...) \
+	SELECT_ACCORDING_ARG_COUNT(__VA_ARGS__, REGISTER_PUMPKIN_TEST_SECTION, \
+				REGISTER_PUMPKIN_TEST_GLOBAL)
+
+#define REGISTER_PUMPKIN_TEST(...) REGISTER_PUMPKIN_TEST_DISPATCHER(__VA_ARGS__)(__VA_ARGS__)
+
+
 
 #endif // PUMPKIN_TEST_H

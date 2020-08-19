@@ -533,9 +533,9 @@ namespace details {
 template<typename T> class AutoRegistration: public details::AutoRegistrable
 {
 public:
-	AutoRegistration()
+	AutoRegistration(std::string section="")
 	{
-		AutoRegisteredTestCampaign::push(std::shared_ptr<T>(new T()));
+		AutoRegisteredTestCampaign::push(section, std::shared_ptr<T>(new T()));
 	}
 };
 

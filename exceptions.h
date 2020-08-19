@@ -516,96 +516,34 @@ jurisdiction, by the more diligent Party.
 
 Version 1.0 dated 2006-09-05.
 */
-#ifndef PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H
-#define PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H
 
 
-#include "./autoregistrable.h"
-#include "./testsuite.h"
 
-#include <vector>
+#ifndef EXCEPTIONS_H
+#define EXCEPTIONS_H
+
+#include <sstream>
+#include <exception>
 
 
 namespace PumpkinTest {
-int runAll();
-namespace details {
+namespace exceptions {
 
-using TestSuite_ptr = std::shared_ptr<PumpkinTest::details::TestSuite>;
-
-class Section {
+template<typename T> class NotEqualsException: public std::exception {
 public:
-	Section(std::string const& name): name(name)
-	{}
-
-	using TestSuites = std::vector<TestSuite_ptr>;
-	using iterator = TestSuites::const_iterator;
-
-	iterator begin() const { return items.cbegin(); }
-	iterator end() const { return items.cend(); }
-	void add(TestSuite_ptr const& p) { items.push_back(p); }
-
-	std::string const name;
-private:
-	TestSuites items;
-
-};
-using Sections = std::vector<Section>;
-
-
-class Factories {
-public:
-
-	using const_iterator = Sections::const_iterator;
-
-	void insert(std::string sectionName, TestSuite_ptr const& testSuite)
+	NotEqualsException(T expected, T result)
 	{
-		if (sectionName == "")
-			sectionName = "Global";
-		auto section = std::find_if(sections.begin(), sections.end(), [&sectionName](Section const& s) {
-			return s.name == sectionName;
-		});
-
-		if (section == sections.end())
-		{
-			Section newSection(sectionName);
-			newSection.add(testSuite);
-			sections.push_back(newSection);
-			return;
-		}
-		section->add(testSuite);
+		std::stringstream ss;
+		ss << "Expected was '" << expected << "' but actual is '" << result << "'";
+		message = ss.str();
 	}
-
-	const_iterator begin() const { return sections.cbegin(); }
-	const_iterator end() const { return sections.cend(); }
-
+	virtual const char * what () const noexcept { return message.c_str(); }
 private:
-	Sections sections;
-};
-
-class AutoRegisteredTestCampaign
-{
-public:
-	AutoRegisteredTestCampaign()
-	{}
-
-	virtual ~AutoRegisteredTestCampaign() = 0;
-	static void push(std::string section, TestSuite_ptr const& suite)
-	{
-		sections().insert(section, suite);
-	}
-private:
-	static Factories& sections()
-	{
-		static Factories f;
-		return f;
-	}
-
-	friend int PumpkinTest::runAll();
+	std::string message;
 };
 
 }
+
 }
 
-
-
-#endif // PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H
+#endif // EXCEPTIONS_H

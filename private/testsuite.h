@@ -537,7 +537,7 @@ Version 1.0 dated 2006-09-05.
 
 namespace PumpkinTest {
 namespace details {
-inline std::ostream& operator<<(std::ostream& os, Summary const& s)
+inline std::stringstream& operator<<(std::stringstream& os, Summary const& s)
 {
 	bool first = true;
 	auto dump = [&](TestResult r, std::string const& suffix)
@@ -559,6 +559,12 @@ inline std::ostream& operator<<(std::ostream& os, Summary const& s)
 	dump(TestResult::KO, "failed");
 	dump(TestResult::FAILED, "failed with error");
 	os << std::endl;
+	return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, Summary const& s)
+{
+	os << (std::stringstream() << s).str();
 	return os;
 }
 
@@ -614,12 +620,12 @@ private:
 
 	friend std::ostream& operator<<(std::ostream& os, TestSuite const& suite)
 	{
-		os << suite.name << std::string(maxSuiteTitleLength() - suite.name.size(), ' ');
+		os << std::string(4, ' ') << suite.name << std::string(maxSuiteTitleLength() - suite.name.size(), ' ');
 		bool first = true;
 		for (auto const& test: suite.tests)
 		{
 			if (!first)
-				os << std::string(maxSuiteTitleLength(), ' ');
+				os << std::string(maxSuiteTitleLength() + 4, ' ');
 			os << " | ";
 			os.width(long(maxTitleLength()));
 			os << std::left << test->testname() << " | ";

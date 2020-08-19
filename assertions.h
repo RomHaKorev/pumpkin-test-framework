@@ -516,96 +516,36 @@ jurisdiction, by the more diligent Party.
 
 Version 1.0 dated 2006-09-05.
 */
-#ifndef PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H
-#define PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H
 
 
-#include "./autoregistrable.h"
-#include "./testsuite.h"
 
-#include <vector>
+#ifndef ASSERTIONS_H
+#define ASSERTIONS_H
 
+#include "exceptions.h"
 
 namespace PumpkinTest {
-int runAll();
-namespace details {
+namespace Assertions {
 
-using TestSuite_ptr = std::shared_ptr<PumpkinTest::details::TestSuite>;
-
-class Section {
-public:
-	Section(std::string const& name): name(name)
-	{}
-
-	using TestSuites = std::vector<TestSuite_ptr>;
-	using iterator = TestSuites::const_iterator;
-
-	iterator begin() const { return items.cbegin(); }
-	iterator end() const { return items.cend(); }
-	void add(TestSuite_ptr const& p) { items.push_back(p); }
-
-	std::string const name;
-private:
-	TestSuites items;
-
-};
-using Sections = std::vector<Section>;
-
-
-class Factories {
-public:
-
-	using const_iterator = Sections::const_iterator;
-
-	void insert(std::string sectionName, TestSuite_ptr const& testSuite)
-	{
-		if (sectionName == "")
-			sectionName = "Global";
-		auto section = std::find_if(sections.begin(), sections.end(), [&sectionName](Section const& s) {
-			return s.name == sectionName;
-		});
-
-		if (section == sections.end())
-		{
-			Section newSection(sectionName);
-			newSection.add(testSuite);
-			sections.push_back(newSection);
-			return;
-		}
-		section->add(testSuite);
-	}
-
-	const_iterator begin() const { return sections.cbegin(); }
-	const_iterator end() const { return sections.cend(); }
-
-private:
-	Sections sections;
-};
-
-class AutoRegisteredTestCampaign
+template<typename T> void assertEquals(T expected, T result)
 {
-public:
-	AutoRegisteredTestCampaign()
-	{}
+	if (expected != result)
+		throw PumpkinTest::exceptions::NotEqualsException<T>(expected, result);
+}
 
-	virtual ~AutoRegisteredTestCampaign() = 0;
-	static void push(std::string section, TestSuite_ptr const& suite)
-	{
-		sections().insert(section, suite);
-	}
-private:
-	static Factories& sections()
-	{
-		static Factories f;
-		return f;
-	}
+inline void assertTrue(bool result)
+{
+	if (!result)
+		throw PumpkinTest::exceptions::NotEqualsException<bool>(true, result);
+}
 
-	friend int PumpkinTest::runAll();
-};
+inline void assertFalse(bool result)
+{
+	if (result)
+		throw PumpkinTest::exceptions::NotEqualsException<bool>(false, result);
+}
 
 }
 }
 
-
-
-#endif // PUMPKIN_TEST_AUTOREGISTRATIONCAMPAIGN_H
+#endif // ASSERTIONS_H
