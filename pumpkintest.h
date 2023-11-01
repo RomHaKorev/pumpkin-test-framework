@@ -542,10 +542,10 @@ inline int runAll()
 
 	std::stringstream output;
 
-	for (auto section : PumpkinTest::details::AutoRegisteredTestCampaign::sections())
+	for (const auto& section : PumpkinTest::details::AutoRegisteredTestCampaign::sections())
 	{
 		output << section.name << std::endl;
-		for (auto test: section)
+		for (const auto& test: section)
 		{
 			summary += test->run();
 			output << *test;

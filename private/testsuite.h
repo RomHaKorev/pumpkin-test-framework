@@ -527,8 +527,9 @@ Version 1.0 dated 2006-09-05.
 #include <functional>
 #include <sstream>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <map>
+#include <memory>
 
 #include "./assertions.h"
 
@@ -544,7 +545,7 @@ inline std::stringstream& operator<<(std::stringstream& os, Summary const& s)
 	{
 		if (s.at(r) == 0)
 			return;
-		if (first == false)
+		if (!first)
 			os << ", ";
 		first = false;
 

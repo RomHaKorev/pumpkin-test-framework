@@ -594,7 +594,7 @@ private:
 #ifdef PUMPKINTEST_ASSERTION_COUNTER
 		ss << "Assertion #" << Assertions::counter() << ": " << message;
 #else
-		ss << ex.what();
+		ss << message;
 #endif
 		info = ss.str();
 	}
